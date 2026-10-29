@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio Especial</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background: linear-gradient(-45deg, #0b1121, #1e3c72, #0f172a, #112240);
+            background-size: 400% 400%;
+            animation: aurora 15s ease infinite;
+            color: white; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; 
+        }
+
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; position: relative; z-index: 1; }
+        
+        .header-rifa { background: rgba(30, 60, 114, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 40px 20px; border-radius: 0 0 30px 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); margin-bottom: 30px; }
+        .header-rifa h1 { font-size: 30px; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .header-rifa p { font-size: 15px; opacity: 0.9; color: #cbd5e1; }
+
+        .legendas { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .legenda-item { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .dot { width: 14px; height: 14px; border-radius: 50%; }
+        .dot.livre { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+        .dot.pendente { background: #f1c40f; box-shadow: 0 0 10px #f1c40f; }
+        .dot.pago { background: #95a5a6; }
+
+        .grid-rifa { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 20px; padding: 10px 15px; perspective: 800px; }
+        
+        .quadrado { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; border-radius: 16px; border: none; position: relative; transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1); animation: surgir 0.6s ease-out backwards; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .quadrado:nth-child(even) { animation-delay: 0.1s; }
+        .quadrado:nth-child(3n) { animation-delay: 0.2s; }
+
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(40px) scale(0.8) rotateX(-20deg); }
+            to { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
+        }
+        
+        .quadrado.livre { background: linear-gradient(180deg, #2ecc71, #27ae60); color: white; cursor: pointer; box-shadow: 0 8px 0 #1e8449, 0 15px 20px rgba(0,0,0,0.3); transform: translateY(0); }
+        .quadrado.livre:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 0 #1e8449, 0 20px 25px rgba(0,0,0,0.4); }
+        .quadrado.livre:active { transform: translateY(8px); box-shadow: 0 0px 0 #1e8449, 0 5px 10px rgba(0,0,0,0.4); }
+        
+        .quadrado.pendente { background: linear-gradient(180deg, #f1c40f, #f39c12); color: white; cursor: default; box-shadow: 0 6px 0 #d35400, 0 10px 15px rgba(0,0,0,0.2); transform: translateY(2px); }
+        .quadrado.pendente::after { content: '\f017'; font-family: 'Font Awesome 5 Free'; font-weight: 900; font-size: 14px; position: absolute; bottom: 6px; text-shadow: none; }
+        
+        .quadrado.pago { background: linear-gradient(180deg, #bdc3c7, #95a5a6); color: #ecf0f1; cursor: default; box-shadow: 0 2px 0 #7f8c8d, inset 0 5px 10px rgba(0,0,0,0.2); transform: translateY(6px); opacity: 0.85; }
+        .quadrado.pago::after { content: '\f023'; font-family: 'Font Awesome 5 Free'; font-weight: 900; font-size: 14px; position: absolute; bottom: 6px; text-shadow: none; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.ativa { display: flex; animation: modalIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-content { background: white; padding: 30px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); color: #333; }
+        
+        .form-group { display: flex; flex-direction: column; text-align: left; margin-top: 15px; gap: 8px; }
+        .form-group label { font-size: 14px; font-weight: 600; color: #444; }
+        .form-group input { padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; font-weight: 500; }
+        .form-group input:focus { border-color: #2a5298; background: #f8fafc; }
+        
+        .pix-box { display: flex; margin-top: 15px; background: #f8f9fa; border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .pix-box input { border: none; background: transparent; padding: 15px; font-size: 16px; width: 100%; outline: none; color: #333; font-weight: 600; text-align: center; }
+        .pix-box button { background: #e2e8f0; border: none; padding: 0 20px; cursor: pointer; color: #1e3c72; font-weight: 700; transition: 0.2s; }
+        .pix-box button:hover { background: #cbd5e1; }
+        
+        .modal-actions { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; flex-direction: column; }
+        .modal-actions.row { flex-direction: row; }
+        .modal-actions button { flex: 1; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; font-size: 15px; transition: 0.2s; width: 100%; }
+        .btn-voltar { background: #f1f5f9; color: #475569; }
+        .btn-confirmar { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+        .btn-confirmar:active { transform: scale(0.96); }
+        
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="header-rifa">
+        <h1>Sorteio Especial</h1>
+        <p>Escolha o seu número da sorte!</p>
+    </div>
+
+    <div class="container">
+        <div class="legendas">
+            <div class="legenda-item"><div class="dot livre"></div> Livre</div>
+            <div class="legenda-item"><div class="dot pendente"></div> Aguardando</div>
+            <div class="legenda-item"><div class="dot pago"></div> Comprado</div>
+        </div>
+
+        <div id="cartela" class="grid-rifa">
+            <p style="color: #cbd5e1; grid-column: 1 / -1; font-weight: 600;">Carregando painel...</p>
+        </div>
+    </div>
+
+    <div id="modal-compra" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #1e3c72; font-size: 22px;">Número <span id="txt-numero-escolhido"></span></h3>
+            <p style="font-size: 14px; color: #666; margin-top: 5px;">Preencha os seus dados para reservar.</p>
+            
+            <div class="form-group">
+                <label>Seu Nome:</label>
+                <input type="text" id="nome" placeholder="Ex: Lucas Silva" required>
+            </div>
+            <div class="form-group">
+                <label>Seu WhatsApp:</label>
+                <input type="tel" id="whatsapp" placeholder="(16) 99999-9999" maxlength="15" oninput="mascaraWhatsApp(this)" required>
+            </div>
+
+            <div class="modal-actions row">
+                <button class="btn-voltar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirmar" id="btn-finalizar" onclick="confirmarReserva()">Reservar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-pagamento" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #27ae60; font-size: 24px;"><i class="fas fa-check-circle"></i> Reservado!</h3>
+            <p style="font-size: 15px; color: #555; margin-top: 10px; line-height: 1.5;">Copie a chave PIX abaixo para pagar e envie-nos o comprovante.</p>
+            
+            <div class="form-group">
+                <label>Chave PIX (Celular):</label>
+                <div class="pix-box">
+                    <input type="text" id="chave-pix" value="16994362279" readonly>
+                    <button id="btn-copiar" onclick="copiarPix()"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-confirmar" onclick="enviarComprovante()" style="background: linear-gradient(135deg, #25D366, #128C7E);"><i class="fab fa-whatsapp"></i> Enviar Comprovante</button>
+                <button class="btn-voltar" onclick="fecharModalPagamento()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let idSelecionado = null;
+        let numSelecionado = null;
+        let linkWhatsAppGlobal = "";
+        let textoDadosAntigos = ""; 
+
+        function mascaraWhatsApp(input) {
+            let v = input.value.replace(/\D/g, ""); 
+            if (v.length > 11) v = v.slice(0, 11); 
+            if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+            if (v.length > 10) v = `${v.slice(0, 10)}-${v.slice(10)}`;
+            input.value = v;
+        }
+
+        async function carregarNumeros() {
+            try {
+                const resposta = await fetch('/api/rifa');
+                const data = await resposta.json();
+                const textoDadosNovos = JSON.stringify(data);
+                if (textoDadosNovos !== textoDadosAntigos) {
+                    textoDadosAntigos = textoDadosNovos;
+                    renderizarCartela(data);
+                }
+            } catch (e) { console.error("Aguardando banco de dados..."); }
+        }
+
+        function renderizarCartela(numeros) {
+            const grid = document.getElementById('cartela');
+            grid.innerHTML = '';
+            numeros.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `quadrado ${item.status}`;
+                btn.innerText = item.numero;
+                if (item.status === 'livre') {
+                    btn.onclick = () => abrirModal(item.id, item.numero);
+                }
+                grid.appendChild(btn);
+            });
+        }
+
+        function abrirModal(id, numero) {
+            idSelecionado = id;
+            numSelecionado = numero;
+            document.getElementById('txt-numero-escolhido').innerText = numero;
+            document.getElementById('modal-compra').classList.add('ativa');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-compra').classList.remove('ativa');
+            document.getElementById('nome').value = '';
+            document.getElementById('whatsapp').value = '';
+        }
+
+        function fecharModalPagamento() {
+            document.getElementById('modal-pagamento').classList.remove('ativa');
+        }
+
+        function copiarPix() {
+            const chave = document.getElementById('chave-pix').value;
+            navigator.clipboard.writeText(chave).then(() => {
+                const btn = document.getElementById('btn-copiar');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { btn.innerHTML = '<i class="far fa-copy"></i>'; }, 2000);
+            });
+        }
+
+        async function confirmarReserva() {
+            const nome = document.getElementById('nome').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            
+            if (!nome || whatsapp.length < 14) { alert("Preencha os dados corretamente!"); return; }
+
+            document.getElementById('btn-finalizar').innerText = "Aguarde...";
+            
+            const resposta = await fetch('/api/rifa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: idSelecionado, updates: { status: 'pendente', nome_comprador: nome, whatsapp: whatsapp } })
+            });
+            const result = await resposta.json();
+
+            if (result.success) {
+                const msg = `Olá! Acabei de reservar o número ${numSelecionado} na rifa. O meu nome é ${nome}. Segue o comprovante do PIX:`;
+                linkWhatsAppGlobal = `https://wa.me/${result.telefoneAdmin}?text=${encodeURIComponent(msg)}`;
+                
+                fecharModal();
+                document.getElementById('modal-pagamento').classList.add('ativa');
+                document.getElementById('btn-finalizar').innerText = "Reservar";
+                carregarNumeros();
+            }
+        }
+
+        function enviarComprovante() {
+            window.open(linkWhatsAppGlobal, '_blank');
+            fecharModalPagamento();
+        }
+
+        window.onload = function() {
+            carregarNumeros();
+            setInterval(carregarNumeros, 3000); 
+        };
+    </script>
+</body>
+</html>
